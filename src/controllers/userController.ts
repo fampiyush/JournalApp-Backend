@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import {client} from '../database/userdb'
+import { getSignedUrl } from '@aws-sdk/cloudfront-signer';
 
 export const registerUser = asyncHandler(async (req, res) => {
     const {name, username, email, password} = req.body
@@ -97,6 +98,19 @@ export const getme = asyncHandler(async(req, res) => {
         email: me.rows[0].user_email, 
     }
     res.status(200).json(user)
+})
+
+export const getProfilePic = asyncHandler(async(req, res) => {
+    const id = req.user.rows[0].user_id
+
+    const url = getSignedUrl({
+        url: "https://duo7oox61xayt.cloudfront.net/" + id + "/profilepicture.jpg",
+        dateLessThan: (new Date(Date.now() + 1000 * 60 * 60 * 24)).toString(),
+        privateKey: process.env.CLOUDFARE_PRIVATE_KEY,
+        keyPairId: process.env.KEY_PAIR_ID
+    })
+
+    res.status(200).json(url)
 })
 
 const generateToken = (id: string) => {
