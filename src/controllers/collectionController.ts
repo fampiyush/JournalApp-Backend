@@ -1,0 +1,56 @@
+import asyncHandler from 'express-async-handler';
+import {client} from '../database/userdb'
+import { getSignedUrl } from '@aws-sdk/cloudfront-signer';
+
+export const uploadCollection = asyncHandler(async(req, res) => {
+    const user_id = req.user.rows[0].user_id
+    const {name, collection_id} = req.body
+
+    if(!name || !collection_id){
+        res.status(400)
+        throw new Error('Please include all fields')
+    }
+
+    const collection = await client.query('Insert into userdata.collections(collection_id, collection_name, user_id) values($1,$2,$3) returning *', [collection_id, name, user_id])
+
+    if(collection){
+        res.status(201).json({
+            message: 'Successfull'
+        })
+    }else {
+        res.status(400)
+        throw new Error('Invalid collection data')
+    }
+})
+
+export const getAllCollection = asyncHandler(async(req, res) => {
+    const user_id = req.user.rows[0].user_id
+
+    const collections = await client.query('Select * from userdata.collections where user_id = $1', [user_id])
+
+    if(collections){
+        collections.rows.forEach((item) => {
+            if(item.imguri){
+                item.imguri = getSignedPic(item.user_id, item.collection_id)
+            }
+        })
+    }
+
+    if(collections){
+        res.status(200).json(collections.rows)
+    }else {
+        res.status(400)
+        throw new Error('No collections found')
+    }
+})
+
+const getSignedPic = async(user_id, collection_id) => {
+
+    const url = getSignedUrl({
+        url: "https://duo7oox61xayt.cloudfront.net/" + user_id + "/" + collection_id + ".jpg",
+        dateLessThan: (new Date(Date.now() + 1000 * 60 * 60 * 24)).toString(),
+        privateKey: process.env.CLOUDFARE_PRIVATE_KEY,
+        keyPairId: process.env.KEY_PAIR_ID
+    })
+    return url
+}
