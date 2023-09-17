@@ -4,14 +4,14 @@ import { getSignedUrl } from '@aws-sdk/cloudfront-signer';
 
 export const uploadCollection = asyncHandler(async(req, res) => {
     const user_id = req.user.rows[0].user_id
-    const {name, collection_id} = req.body
+    const {name, collection_id, collection_img} = req.body
 
     if(!name || !collection_id){
         res.status(400)
         throw new Error('Please include all fields')
     }
 
-    const collection = await client.query('Insert into userdata.collections(collection_id, collection_name, user_id) values($1,$2,$3) returning *', [collection_id, name, user_id])
+    const collection = await client.query('Insert into userdata.collections(collection_id, collection_name, user_id, collection_img) values($1,$2,$3,$4) returning *', [collection_id, name, user_id, collection_img])
 
     if(collection){
         res.status(201).json({
@@ -29,14 +29,12 @@ export const getAllCollection = asyncHandler(async(req, res) => {
     const collections = await client.query('Select * from userdata.collections where user_id = $1', [user_id])
 
     if(collections){
-        collections.rows.forEach((item) => {
-            if(item.imguri){
-                item.imguri = getSignedPic(item.user_id, item.collection_id)
+        for await (const item of collections.rows){
+            if(item.collection_img){
+                const url = await getSignedPic(item.user_id, item.collection_id)
+                item.collection_imguri = url
             }
-        })
-    }
-
-    if(collections){
+        }
         res.status(200).json(collections.rows)
     }else {
         res.status(400)
