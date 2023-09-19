@@ -26,7 +26,7 @@ export const uploadCollection = asyncHandler(async(req, res) => {
 export const getAllCollection = asyncHandler(async(req, res) => {
     const user_id = req.user.rows[0].user_id
 
-    const collections = await client.query('Select * from userdata.collections where user_id = $1', [user_id])
+    const collections = await client.query('Select * from userdata.collections where user_id = $1 ORDER BY collection_serial DESC', [user_id])
 
     if(collections){
         for await (const item of collections.rows){
