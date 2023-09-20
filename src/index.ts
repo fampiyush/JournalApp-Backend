@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/users', require('./routes/userRoutes'))
 app.use('/collection', require('./routes/collectionRoutes'))
+app.use('/slide', require('./routes/slideRoutes'))
 
 app.get('/', async (req, res) => {
     res.status(200).json({message : 'Welcome to the JournalApp API'})

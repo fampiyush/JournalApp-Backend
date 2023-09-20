@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import {client} from '../database/userdb'
 import { getSignedUrl } from '@aws-sdk/cloudfront-signer';
+import { deleteImage } from '../utils/awsUtils'
 
 export const uploadCollection = asyncHandler(async(req, res) => {
     const user_id = req.user.rows[0].user_id
@@ -42,7 +43,22 @@ export const getAllCollection = asyncHandler(async(req, res) => {
     }
 })
 
-const getSignedPic = async(user_id, collection_id) => {
+export const deleteCollection = asyncHandler(async(req, res) => {
+    const user_id = req.user.rows[0].user_id
+    const {collection_id} = req.body
+
+    const deleted = await client.query('Delete from userdata.collections where collection_id = $1', [collection_id])
+
+    if(deleted.rowCount == 1){
+        deleteImage(user_id, collection_id)
+        res.status(200).json({message: 'Successfull'})
+    }else {
+        res.status(400)
+        throw new Error('Collection cannot be deleted')
+    }
+})
+
+export const getSignedPic = async(user_id, collection_id) => {
 
     const url = getSignedUrl({
         url: "https://duo7oox61xayt.cloudfront.net/" + user_id + "/" + collection_id + ".jpg",
