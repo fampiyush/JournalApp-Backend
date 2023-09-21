@@ -32,7 +32,7 @@ export const getAllSlides = asyncHandler(async(req, res) => {
 
     if(slides){
         for await (const item of slides.rows){
-            if(item.collection_img){
+            if(item.slide_isimage){
                 const url = await getSignedPic(user_id, item.slide_id)
                 item.slide_imgurl = url
             }
@@ -47,7 +47,6 @@ export const getAllSlides = asyncHandler(async(req, res) => {
 export const deleteSlide = asyncHandler(async(req, res) => {
     const user_id = req.user.rows[0].user_id
     const {slide_id} = req.body
-
     const deleted = await client.query('Delete from userdata.slides where slide_id = $1', [slide_id])
 
     if(deleted.rowCount == 1){
@@ -55,6 +54,6 @@ export const deleteSlide = asyncHandler(async(req, res) => {
         res.status(200).json({message: 'Successfull'})
     }else {
         res.status(400)
-        throw new Error('Collection cannot be deleted')
+        throw new Error('Slide cannot be deleted')
     }
 })
