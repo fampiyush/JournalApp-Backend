@@ -1,10 +1,11 @@
 import {Client} from 'pg'
 
 export const client = new Client({
-    host: "localhost",
+    host: process.env.RDS_ENDPOINT,
     user: "postgres",
-    port: 5432,
-    password: "admin",
-    database: "JournalApp"
+    port: parseInt(process.env.RDS_PORT),
+    password: process.env.RDS_PASSWORD,
+    database: "postgres",
+    ssl: {rejectUnauthorized: false }
 })
 client.connect();
