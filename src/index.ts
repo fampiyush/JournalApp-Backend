@@ -5,7 +5,7 @@ const dotenv = require('dotenv').config()
 import errorHandler from './middleware/errorMiddleware'
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 
 app.use(express.json())
@@ -21,6 +21,6 @@ app.get('/', async (req, res) => {
 
 app.use(errorHandler)
 
-app.listen(PORT, '192.168.21.100', () => {
+app.listen(PORT, () => {
     return console.log(`Express is listening at port ${PORT}`);
 });
