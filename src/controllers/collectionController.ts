@@ -48,6 +48,15 @@ export const deleteCollection = asyncHandler(async(req, res) => {
     const {collection_id} = req.body
 
     const deleted = await client.query('Delete from userdata.collections where collection_id = $1', [collection_id])
+    const slidesDelete = await client.query('Delete from userdata.slides where collection_id = $1 returning *', [collection_id])
+    
+    if(slidesDelete.rowCount > 0){
+        for await (const item of slidesDelete.rows){
+            if(item.slide_isimage){
+                deleteImage(user_id, item.slide_id)
+            }
+        }
+    }
 
     if(deleted.rowCount == 1){
         deleteImage(user_id, collection_id)

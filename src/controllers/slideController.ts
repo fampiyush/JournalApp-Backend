@@ -6,7 +6,7 @@ import { deleteImage } from '../utils/awsUtils';
 export const uploadSlide = asyncHandler(async(req, res) => {
     const {text, slide_id, slide_isimage, collection_id} = req.body
 
-    if(!text || !slide_id || !collection_id){
+    if(!slide_id || !collection_id){
         res.status(400)
         throw new Error('Please include all fields')
     }
